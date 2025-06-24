@@ -9,7 +9,7 @@ import Footer from '../components/footer/Footer';
 import { useNavigate } from 'react-router-dom';
 import { useUsuario } from '../context/userContext';
 import '../styles/perfil.css';
-
+import logo from '../../assets/logo.png';
 const menuItems = [
   { id: 'profile', label: 'Mi Perfil', icon: User },
   { id: 'orders', label: 'Mis Pedidos', icon: Package },
@@ -104,7 +104,7 @@ const UserProfile = () => {
     <div className="user-profile">
       <header className="header-navbar">
         <div className="logo">
-          <img src="Frontend/src/assets/logo.png" alt="Logo Mercadona" />
+          <img src={logo} alt="Logo Mercadona" />
         </div>
         <div className="user-info-header">
           <span>{userData?.nombre ?? 'Usuario'}</span>

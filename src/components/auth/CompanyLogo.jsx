@@ -1,7 +1,7 @@
 // CompanyLogo.jsx
 import React from 'react';
 import './AuthStyles.css';
-import logo from '../src/assets/logo.png'; 
+import logo from '../../assets/logo.png'; 
 function CompanyLogo() {
   return (
     <div className="logo-container">
