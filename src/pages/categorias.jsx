@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Productos from '../components/productos/productos';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/footer/Footer';
-import Banner from '../components/carousel/Banner';
+import Banner from '../components/carousel/banner';
 import '../styles/categorias.css';
 import ProductDetailModal from '../components/productos/detalleproductomodal';
 
