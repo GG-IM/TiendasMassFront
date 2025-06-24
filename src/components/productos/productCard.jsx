@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Heart, Eye, ShoppingCart } from 'lucide-react';
-import './productCard.css';
+import './productcard.css';
 
 
 const categoriaColors = {

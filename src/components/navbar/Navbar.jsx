@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUsuario } from '../../context/userContext';
 import { useCarrito } from '../../context/carContext';
 import Carrito from '../car/Carrito';
-import './Navbar.css';
+import './navbar.css';
 import logo from '../../assets/logo.png';
 
 // Componente SearchBar separado
