@@ -5,6 +5,7 @@ import { useCarrito } from '../../context/carContext';
 import Carrito from '../car/Carrito';
 import './navbar.css';
 import logo from '../../assets/logo.png';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Componente SearchBar separado
 const SearchBar = ({ 
@@ -232,7 +233,7 @@ const Navbar = ({ abrirModal }) => {
         return;
       }
       try {
-        const res = await fetch(`http://localhost:3000/api/products?q=${encodeURIComponent(searchTerm)}`);
+        const res = await fetch(`${API_URL}/api/products?q=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         setSugerencias(data.slice(0, 5));
       } catch (err) {

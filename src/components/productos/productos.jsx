@@ -5,6 +5,7 @@ import { useUsuario } from '../../context/userContext';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from './productCard';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const Productos = ({ categoriaId,onProductClick }) => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,8 +21,8 @@ const Productos = ({ categoriaId,onProductClick }) => {
       setError(null);
       try {
         const url = categoriaId
-          ? `http://localhost:3000/api/products?categoriaId=${categoriaId}`
-          : 'http://localhost:3000/api/products';
+          ? `${API_URL}/api/products?categoriaId=${categoriaId}`
+          : `${API_URL}/api/products`;
         const res = await axios.get(url);
         setProductos(res.data);
       } catch (err) {

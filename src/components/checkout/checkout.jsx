@@ -5,6 +5,7 @@ import { MapPin, User, Mail, Phone, Truck, Store } from 'lucide-react';
 import { useCarrito } from '../../context/carContext';
 import { useUsuario } from '../../context/userContext';
 import './checkout.css';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function Checkout({ activeStep, setActiveStep, formData, setFormData, onChange }) {
   const [paymentMethod, setPaymentMethod] = useState('card');
@@ -30,7 +31,8 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
   useEffect(() => {
     const cargarMetodosPago = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/metodos-pago');
+        const response = await fetch(`${API_URL}/api/metodos-pago`);
+
         if (response.ok) {
           const metodos = await response.json();
           setMetodosPago(metodos);
@@ -108,7 +110,7 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
 
       console.log('📦 Enviando datos adaptados:', JSON.stringify(pedidoData, null, 2));
 
-      const response = await fetch('http://localhost:3000/api/pedidos', {
+      const response = await fetch(`${API_URL}/api/pedidos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

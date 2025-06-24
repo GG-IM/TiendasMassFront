@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
 import './styleperfil.css';
 import Swal from 'sweetalert2';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const Profile = ({ userData, setUserData }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -34,7 +35,8 @@ const Profile = ({ userData, setUserData }) => {
     try {
       const token = localStorage.getItem('token');
 
-      const response = await fetch(`http://localhost:3000/api/usuarios/update/${userData.id}`, {
+      const response = await fetch(`${API_URL}/api/usuarios/update/${userData.id}`, {
+
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

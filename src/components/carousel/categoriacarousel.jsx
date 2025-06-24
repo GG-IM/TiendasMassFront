@@ -3,7 +3,7 @@ import axios from 'axios';
 import Slider from 'react-slick';
 import '../carousel/categoriacarousel.css'; // Asegúrate de que la ruta sea correcta
 import '../categoria/categoria.css'; // Asegúrate de que la ruta sea correcta
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const CategoryCarousel = ({ onSelect }) => {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -13,7 +13,7 @@ const CategoryCarousel = ({ onSelect }) => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/api/categorias');
+        const res = await axios.get(`${API_URL}/api/categorias`);
         // Agrega las imágenes como en tu componente original
         const imgs = [
           'https://www.tiendasmass.com.pe/wp-content/uploads/2023/06/cat1-1.png',

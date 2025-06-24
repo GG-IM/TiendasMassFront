@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Heart, Eye, ShoppingCart } from 'lucide-react';
 import './productcard.css';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 
 const categoriaColors = {
@@ -33,7 +34,8 @@ export default function ProductCard({ producto, onAdd, onClick }) {
         }}
       >
         <img
-          src={`http://localhost:3000/${producto.imagen}`}
+          src={`${API_URL}/${producto.imagen}`}
+
           alt={producto.nombre}
           className={`product-image ${isHovered ? 'hovered' : ''}`}
         />

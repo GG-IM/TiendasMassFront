@@ -5,6 +5,8 @@ import { useUsuario } from '../../context/userContext';
 import './AuthStyles.css';
 import Swal from 'sweetalert2';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 function LoginForm({ switchToRegister }) {
   const navigate = useNavigate();
   const { login } = useUsuario();
@@ -30,7 +32,7 @@ function LoginForm({ switchToRegister }) {
     try {
       console.log('🚀 Iniciando login...');
 
-      const response = await fetch('http://localhost:3000/api/usuarios/login', {
+      const response = await fetch(`${API_URL}/api/usuarios/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

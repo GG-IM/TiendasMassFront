@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUsuario } from '../../context/userContext'; // Asegúrate de tener este contexto
 import './styleperfil.css';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const Orders = () => {
   const { usuario } = useUsuario();
@@ -11,7 +12,8 @@ const Orders = () => {
     const fetchOrders = async () => {
       if (!usuario?.id) return;
       try {
-        const res = await fetch(`http://localhost:3000/api/pedidos/usuario/${usuario.id}`);
+        const res = await fetch(`${API_URL}/api/pedidos/usuario/${usuario.id}`);
+
         const data = await res.json();
         console.log('Respuesta del backend:', data);
 

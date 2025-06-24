@@ -6,8 +6,8 @@ import axios from 'axios';
 
 const ProductManager = () => {
 
-  const API_URL = 'http://localhost:3000/api/products';
-  const CATEGORY_URL = 'http://localhost:3000/api/categorias';
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/products`;
+  const CATEGORY_URL = `${import.meta.env.VITE_API_URL}/api/categorias`;
 
 
   const [products, setProducts] = useState([]);
@@ -215,7 +215,7 @@ const ProductManager = () => {
                 <tr key={product.id}>
                   <td>
                     <img
-                      src={product.imagen ? `http://localhost:3000/${product.imagen}` : '/placeholder-image.jpg'}
+                      src={product.imagen ? `${import.meta.env.VITE_API_URL}/${product.imagen}` : '/placeholder-image.jpg'}
                       alt={product.nombre}
                       className="rounded"
                       style={{ width: '50px', height: '50px', objectFit: 'cover' }}

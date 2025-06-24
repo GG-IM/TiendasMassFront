@@ -15,8 +15,7 @@ const CategoryManager = () => {
     active: true
   });
 
-  const API_URL = 'http://localhost:3000/api/categorias';
-
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/categorias`;
   useEffect(() => {
     axios.get(API_URL)
       .then((res) => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useCarrito } from '../../context/carContext';
 import './detalleproducto.css';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const categoriaColors = {
   1: '#33DDC8',
@@ -46,7 +47,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
                   style={{ backgroundColor: categoriaColor }}
                 >
                   <img
-                    src={`http://localhost:3000/${product.imagen}`}
+                    src={`${API_URL}/${product.imagen}`}
                     alt={product.nombre}
                     className="img-fluid rounded object-fit-contain"
                     style={{ maxHeight: '240px', maxWidth: '340px' }}
