@@ -9,7 +9,8 @@ import Footer from '../components/footer/Footer';
 import { useNavigate } from 'react-router-dom';
 import { useUsuario } from '../context/userContext';
 import '../styles/perfil.css';
-import logo from '../../assets/logo.png';
+import logo from '../assets/logo.png';
+
 const menuItems = [
   { id: 'profile', label: 'Mi Perfil', icon: User },
   { id: 'orders', label: 'Mis Pedidos', icon: Package },
