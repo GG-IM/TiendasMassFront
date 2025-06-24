@@ -1,7 +1,7 @@
 // LoginForm.jsx - Versión mejorada con mejor manejo de errores
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUsuario } from '../../context/UserContext';
+import { useUsuario } from '../../context/userContext';
 import './AuthStyles.css';
 import Swal from 'sweetalert2';
 
