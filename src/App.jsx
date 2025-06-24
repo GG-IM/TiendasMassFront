@@ -5,7 +5,7 @@ import Categorias from './pages/categorias';
 import CheckoutPage from './pages/CheckoutPage';
 import Contacto from './pages/Contacto';
 import { CarritoProvider } from './context/carContext';
-import { UsuarioProvider } from './context/UserContext';
+import { UsuarioProvider } from './context/userContext';
 import ResultadosBusqueda from './pages/ResultadosBusqueda';
 import React from 'react';
 import UserProfile from './pages/perfil'; 
