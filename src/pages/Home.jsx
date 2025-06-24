@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/Home.css';
-import Footer from '../components/footer/footer';
+import Footer from '../components/footer/Footer';
 import Navbar from '../components/navbar/Navbar';
 import ProductCarousel from '../components/carousel/productCarousel';
 import WhatsAppButton from '../button/whatsappbutton';
@@ -98,3 +98,4 @@ const Home = () => {
 };
 
 export default Home;
+   
