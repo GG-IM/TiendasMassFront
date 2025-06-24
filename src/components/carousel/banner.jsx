@@ -8,13 +8,13 @@ const Banner = ( ) => {
 
       <div className="carousel-inner">
         <div className="carousel-item active">
-          <img src="Frontend/src/assets/banner/BANNER-WEB.png" className="d-block w-100" alt="banner1" />
+          <img src="src/assets/banner/BANNER-WEB.png" className="d-block w-100" alt="banner1" />
         </div>
         <div className="carousel-item">
-          <img src="Frontend\src\assets\banner\banner2.png" className="d-block w-100" alt="banner2" />
+          <img src="src\assets\banner\banner2.png" className="d-block w-100" alt="banner2" />
         </div>
         <div className="carousel-item">
-          <img src="Frontend\src\assets\banner\banner3.png" className="d-block w-100" alt="banner3" />
+          <img src="src\assets\banner\banner3.png" className="d-block w-100" alt="banner3" />
         </div>
       </div>
       <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">

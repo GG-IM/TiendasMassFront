@@ -8,7 +8,7 @@ function CompanyLogo() {
       <div className="logo-placeholder">
         {
         <img 
-          src="frontend/src/assets/logo.png" 
+          src="src/assets/logo.png" 
           alt="Logo de la empresa" 
           className="company-logo" 
         />
