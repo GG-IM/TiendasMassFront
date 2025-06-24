@@ -5,7 +5,7 @@ import Profile from '../components/perfil/profile';
 import Orders from '../components/perfil/orders';
 import Addresses from '../components/perfil/direccion';
 import Payments from '../components/perfil/metodopago';
-import Footer from '../components/footer/footer';
+import Footer from '../components/footer/Footer';
 import { useNavigate } from 'react-router-dom';
 import { useUsuario } from '../context/userContext';
 import '../styles/perfil.css';

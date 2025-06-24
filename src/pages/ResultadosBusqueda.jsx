@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import Navbar from '../components/navbar/Navbar';
-import Banner from '../components/carousel/Banner';
-import Footer from '../components/footer/footer';
+import Banner from '../components/carousel/banner';
+import Footer from '../components/footer/Footer';
 import ProductCard from '../components/productos/productCard';
 import '../styles/SearchResults.css';
 import ProductDetailModal from '../components/productos/detalleproductomodal';
