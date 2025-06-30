@@ -5,7 +5,7 @@ import { useUsuario } from '../../context/userContext';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from './productCard';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const Productos = ({ categoriaId,onProductClick }) => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
