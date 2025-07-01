@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUsuario } from '../../context/userContext'; // Asegúrate de tener este contexto
 import './styleperfil.css';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 const Orders = () => {
   const { usuario } = useUsuario();

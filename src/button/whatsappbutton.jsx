@@ -28,7 +28,7 @@ const WhatsAppButton = () => {
       style={estiloBoton}
     >
       <img
-        src="Frontend\src\assets\imagenes\icons8-whatsapp.svg"
+        src="src\assets\imagenes\icons8-whatsapp.svg"
         alt="WhatsApp"
         style={estiloIcono}
       />

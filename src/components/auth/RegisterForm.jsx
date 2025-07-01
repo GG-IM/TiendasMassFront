@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import './AuthStyles.css';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 function RegisterForm({ switchToLogin }) {
   const [formData, setFormData] = useState({

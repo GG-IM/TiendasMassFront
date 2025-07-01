@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Edit3 } from 'lucide-react';
 import './styleperfil.css';
 import Swal from 'sweetalert2';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const Profile = ({ userData, setUserData }) => {
   const [isEditing, setIsEditing] = useState(false);
 

@@ -19,6 +19,8 @@ import GestionMetodoPago from './admin/components/GestionMetodoPago';
 import GestionProducto from './admin/components/GestionProducto';
 import GestionUsuarios from './admin/components/GestionUsuarios';
 import ReportesPedidos from './admin/components/ReportesPedidos';
+import CrearAdmin from './admin/components/CrearAdmin';
+import AdminRoute from './components/AdminRoute';
 
 import './App.css';
 
@@ -29,7 +31,11 @@ function App() {
         <Router>
           <Routes>
             {/* Rutas del panel de administración */}
-            <Route path="/admin" element={<Admin />}>
+            <Route path="/admin" element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="categorias" element={<GestionCategorias />} />
               <Route path="estados" element={<GestionEstados />} />
@@ -37,7 +43,8 @@ function App() {
               <Route path="productos" element={<GestionProducto />} />
               <Route path="usuarios" element={<GestionUsuarios />} />
               <Route path="reportes" element={<ReportesPedidos />} />
-              </Route>
+              <Route path="crear-admin" element={<CrearAdmin />} />
+            </Route>
             <Route path="/" element={<Home />} />
             <Route path="/producto/:id" element={<DetalleProducto />} />
             <Route path="/buscar" element={<ResultadosBusqueda />} />

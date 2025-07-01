@@ -22,8 +22,7 @@ const GestionUsuario = () => {
     active: true,
   });
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/api/usuarios`;
-
+  const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
   // Mapeo de roles de BD a nombres para mostrar
   const rolMapping = {
@@ -44,7 +43,7 @@ const GestionUsuario = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/roles`);
+      const response = await axios.get(`${API_URL}/api/roles`);
       setRoles(response.data);
     } catch (error) {
       console.error('Error al obtener roles:', error);

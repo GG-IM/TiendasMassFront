@@ -11,6 +11,8 @@ import { useUsuario } from '../context/userContext';
 import '../styles/perfil.css';
 import logos from '../assets/logo.png';
 
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
+
 const menuItems = [
   { id: 'profile', label: 'Mi Perfil', icon: User },
   { id: 'orders', label: 'Mis Pedidos', icon: Package },
@@ -38,7 +40,7 @@ const UserProfile = () => {
       if (!usuario?.id) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/api/usuarios/${usuario.id}`);
+        const response = await fetch(`${API_URL}/api/usuarios/${usuario.id}`);
         const data = await response.json();
 
         // Asumimos que la respuesta ya tiene los nombres de la entidad Usuario

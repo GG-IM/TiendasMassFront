@@ -1,72 +1,150 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, Users, ShoppingCart, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
-
+import Swal from 'sweetalert2';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const Dashboard = () => {
+  const [dashboardData, setDashboardData] = useState({
+    estadisticas: {
+      totalProductos: 0,
+      totalUsuarios: 0,
+      totalPedidos: 0,
+      pedidosHoy: 0,
+      ventasTotales: 0,
+      ventasMes: 0
+    },
+    cambios: {
+      productos: '+0%',
+      usuarios: '+0%',
+      pedidosHoy: '+0%',
+      ventasMes: '+0%'
+    },
+    estadisticasPorEstado: {},
+    topProductos: [],
+    pedidosRecientes: []
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Cargar datos del dashboard desde el backend
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/dashboard/estadisticas`);
+      if (!response.ok) {
+        throw new Error('Error al cargar datos del dashboard');
+      }
+      const data = await response.json();
+      setDashboardData(data);
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar los datos del dashboard'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
   const stats = [
     {
       title: 'Total Productos',
-      value: '1,245',
-      change: '+12%',
-      changeType: 'positive',
+      value: dashboardData.estadisticas.totalProductos.toLocaleString(),
+      change: dashboardData.cambios.productos,
+      changeType: dashboardData.cambios.productos.startsWith('+') ? 'positive' : 'negative',
       icon: Package,
       color: 'blue'
     },
     {
       title: 'Usuarios Activos',
-      value: '892',
-      change: '+8%',
-      changeType: 'positive',
+      value: dashboardData.estadisticas.totalUsuarios.toLocaleString(),
+      change: dashboardData.cambios.usuarios,
+      changeType: dashboardData.cambios.usuarios.startsWith('+') ? 'positive' : 'negative',
       icon: Users,
       color: 'success'
     },
     {
       title: 'Pedidos Hoy',
-      value: '156',
-      change: '+24%',
-      changeType: 'positive',
+      value: dashboardData.estadisticas.pedidosHoy.toString(),
+      change: dashboardData.cambios.pedidosHoy,
+      changeType: dashboardData.cambios.pedidosHoy.startsWith('+') ? 'positive' : 'negative',
       icon: ShoppingCart,
       color: 'yellow'
     },
     {
       title: 'Ventas del Mes',
-      value: '$45,230',
-      change: '-3%',
-      changeType: 'negative',
+      value: `S/.${dashboardData.estadisticas.ventasMes.toFixed(2)}`,
+      change: dashboardData.cambios.ventasMes,
+      changeType: dashboardData.cambios.ventasMes.startsWith('+') ? 'positive' : 'negative',
       icon: DollarSign,
       color: 'danger'
     }
   ];
 
-  const recentOrders = [
-    { id: '#001', customer: 'Juan Pérez', total: '$85.50', status: 'Completado', time: '10:30 AM' },
-    { id: '#002', customer: 'María García', total: '$120.00', status: 'En proceso', time: '11:15 AM' },
-    { id: '#003', customer: 'Carlos López', total: '$65.75', status: 'Pendiente', time: '11:45 AM' },
-    { id: '#004', customer: 'Ana Martínez', total: '$210.25', status: 'Completado', time: '12:20 PM' },
-    { id: '#005', customer: 'Pedro Sánchez', total: '$95.00', status: 'Cancelado', time: '12:45 PM' }
-  ];
-
-  const topProducts = [
-    { name: 'Coca Cola 350ml', sold: 145, revenue: '$435.00' },
-    { name: 'Pan Integral', sold: 98, revenue: '$196.00' },
-    { name: 'Leche Entera 1L', sold: 87, revenue: '$261.00' },
-    { name: 'Arroz 1kg', sold: 76, revenue: '$152.00' },
-    { name: 'Aceite Girasol', sold: 65, revenue: '$325.00' }
-  ];
-
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'Completado':
+      case 'entregado':
         return 'badge-success';
-      case 'En proceso':
+      case 'enviado':
+        return 'badge-info';
+      case 'confirmado':
         return 'badge-warning';
-      case 'Pendiente':
+      case 'pendiente':
         return 'badge-primary';
-      case 'Cancelado':
+      case 'cancelado':
         return 'badge-danger';
       default:
         return 'badge-primary';
     }
   };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'entregado':
+        return 'Entregado';
+      case 'enviado':
+        return 'Enviado';
+      case 'confirmado':
+        return 'Confirmado';
+      case 'pendiente':
+        return 'Pendiente';
+      case 'cancelado':
+        return 'Cancelado';
+      default:
+        return status;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard fade-in">
+        <div className="row mb-4">
+          <div className="col-12">
+            <h1 className="text-mass-blue mb-0">Dashboard</h1>
+            <p className="text-muted">Resumen general del sistema</p>
+          </div>
+        </div>
+        <div className="text-center py-5">
+          <div className="spinner-border text-mass-blue" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Cargando datos del dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard fade-in">
@@ -124,19 +202,27 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td><strong>{order.id}</strong></td>
-                      <td>{order.customer}</td>
-                      <td><strong>{order.total}</strong></td>
-                      <td>
-                        <span className={`badge ${getStatusBadge(order.status)}`}>
-                          {order.status}
-                        </span>
+                  {dashboardData.pedidosRecientes.length > 0 ? (
+                    dashboardData.pedidosRecientes.map((order) => (
+                      <tr key={order.id}>
+                        <td><strong>#{order.id}</strong></td>
+                        <td>{order.cliente}</td>
+                        <td><strong>S/.{order.total.toFixed(2)}</strong></td>
+                        <td>
+                          <span className={`badge ${getStatusBadge(order.estado)}`}>
+                            {getStatusText(order.estado)}
+                          </span>
+                        </td>
+                        <td>{formatDate(order.fecha)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="text-center text-muted">
+                        No hay pedidos recientes
                       </td>
-                      <td>{order.time}</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -150,19 +236,25 @@ const Dashboard = () => {
               <h3 className="table-title">Top Productos</h3>
             </div>
             <div className="p-3">
-              {topProducts.map((product, index) => (
-                <div key={index} className="d-flex justify-content-between align-items-center py-2 border-bottom">
-                  <div>
-                    <div className="fw-bold text-truncate" style={{maxWidth: '150px'}}>
-                      {product.name}
+              {dashboardData.topProductos.length > 0 ? (
+                dashboardData.topProductos.map((product, index) => (
+                  <div key={index} className="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                      <div className="fw-bold text-truncate" style={{maxWidth: '150px'}}>
+                        {product.nombre}
+                      </div>
+                      <small className="text-muted">{product.vendidos} vendidos</small>
                     </div>
-                    <small className="text-muted">{product.sold} vendidos</small>
+                    <div className="text-end">
+                      <strong className="text-mass-blue">S/.{product.ingresos.toFixed(2)}</strong>
+                    </div>
                   </div>
-                  <div className="text-end">
-                    <strong className="text-mass-blue">{product.revenue}</strong>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted py-3">
+                  No hay productos vendidos aún
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

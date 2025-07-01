@@ -3,7 +3,7 @@ import axios from 'axios';
 import Slider from 'react-slick';
 import '../carousel/categoriacarousel.css'; // Asegúrate de que la ruta sea correcta
 import '../categoria/categoria.css'; // Asegúrate de que la ruta sea correcta
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const CategoryCarousel = ({ onSelect }) => {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading]     = useState(true);

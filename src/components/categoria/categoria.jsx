@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './categoria.css';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const Categoria = ({ onSelect }) => {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);

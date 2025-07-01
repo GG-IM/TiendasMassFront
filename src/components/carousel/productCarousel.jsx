@@ -6,7 +6,7 @@ import { useCarrito } from '../../context/carContext';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import './productcarousel.css';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const ProductCarousel = ({ onProductClick }) => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);

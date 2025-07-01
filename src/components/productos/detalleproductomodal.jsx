@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { useCarrito } from '../../context/carContext';
 import './detalleproducto.css';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 const categoriaColors = {
   1: '#33DDC8',

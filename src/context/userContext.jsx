@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
+
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const UsuarioContext = createContext();
 
 export const UsuarioProvider = ({ children }) => {
@@ -104,7 +106,7 @@ export const UsuarioProvider = ({ children }) => {
     if (storedUser && storedToken) {
       const { id } = JSON.parse(storedUser);
 
-      const res = await fetch(`http://localhost:3000/api/usuarios/${id}`, {
+      const res = await fetch(`${API_URL}/api/usuarios/${id}`, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },

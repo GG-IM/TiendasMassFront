@@ -1,9 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Folder, Users, ShoppingCart, Settings, CreditCard } from 'lucide-react';
-
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Package, Folder, Users, ShoppingCart, Settings, CreditCard, UserPlus, LogOut } from 'lucide-react';
+import Swal from 'sweetalert2';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const Sidebar = ({ collapsed, onToggle }) => {
-  const location = useLocation(); // Detectar ruta activa
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     { to: '/admin/dashboard', label: 'Dashboard', icon: Home },
@@ -13,7 +15,55 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { to: '/admin/reportes', label: 'Pedidos', icon: ShoppingCart },
     { to: '/admin/estados', label: 'Estados', icon: Settings },
     { to: '/admin/metodos-pago', label: 'Métodos de Pago', icon: CreditCard },
+    { to: '/admin/crear-admin', label: 'Crear Admin', icon: UserPlus },
   ];
+
+  const handleLogout = () => {
+    Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: '¿Estás seguro de que quieres salir del panel administrativo?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, salir',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Limpiar datos de admin
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Sesión cerrada',
+          text: 'Has salido del panel administrativo',
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        // Redirigir al login de admin
+        navigate('/admin');
+      }
+    });
+  };
+
+  const getAdminInfo = () => {
+    try {
+      const adminUser = localStorage.getItem('adminUser');
+      if (adminUser) {
+        const userData = JSON.parse(adminUser);
+        return {
+          nombre: userData.nombre,
+          email: userData.email,
+          rol: userData.rol?.nombre
+        };
+      }
+    } catch (error) {
+      console.error('Error al obtener datos de admin:', error);
+    }
+    return null;
+  };
+
+  const adminInfo = getAdminInfo();
 
   return (
     <nav className={`admin-sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -23,6 +73,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
           {!collapsed && <div className="logo-text">Mass Admin</div>}
         </div>
       </div>
+
+      {/* Información del administrador */}
+      {adminInfo && !collapsed && (
+        <div className="admin-info">
+          <div className="admin-name">{adminInfo.nombre}</div>
+          <div className="admin-email">{adminInfo.email}</div>
+          <div className="admin-role">{adminInfo.rol}</div>
+        </div>
+      )}
 
       <ul className="sidebar-nav">
         {menuItems.map((item) => {
@@ -42,6 +101,18 @@ const Sidebar = ({ collapsed, onToggle }) => {
           );
         })}
       </ul>
+
+      {/* Botón de logout */}
+      <div className="sidebar-footer">
+        <button
+          onClick={handleLogout}
+          className="logout-button"
+          title={collapsed ? 'Cerrar sesión' : ''}
+        >
+          <LogOut className="nav-icon" />
+          {!collapsed && <span className="nav-text">Cerrar Sesión</span>}
+        </button>
+      </div>
     </nav>
   );
 };

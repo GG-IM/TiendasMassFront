@@ -5,7 +5,7 @@ import { useCarrito } from '../../context/carContext';
 import Carrito from '../car/Carrito';
 import './navbar.css';
 import logo from '../../assets/logo.png';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 // Componente SearchBar separado
 const SearchBar = ({ 

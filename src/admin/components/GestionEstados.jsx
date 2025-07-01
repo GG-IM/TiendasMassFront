@@ -1,35 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Search, ArrowUp, ArrowDown } from 'lucide-react';
-import { mockOrderStatuses } from '../../data/mockData.jsx';
+import Swal from 'sweetalert2';
 
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const StatusManager = () => {
-  const [statuses, setStatuses] = useState(mockOrderStatuses);
+  const [statuses, setStatuses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingStatus, setEditingStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    nombre: '',
+    descripcion: '',
     color: '#6c757d',
-    active: true,
-    order: 1
+    activo: true,
+    orden: 1
   });
+
+  // Cargar estados desde el backend
+  const loadStatuses = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/estados`);
+      if (!response.ok) {
+        throw new Error('Error al cargar estados');
+      }
+      const data = await response.json();
+      setStatuses(data);
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar los estados'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStatuses();
+  }, []);
 
   const filteredStatuses = statuses
     .filter(status =>
-      status.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      status.description.toLowerCase().includes(searchTerm.toLowerCase())
+      status.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (status.descripcion && status.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
     )
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.orden - b.orden);
 
   const handleEdit = (status) => {
     setEditingStatus(status);
     setFormData({
-      name: status.name,
-      description: status.description,
+      nombre: status.nombre,
+      descripcion: status.descripcion || '',
       color: status.color,
-      active: status.active,
-      order: status.order
+      activo: status.activo,
+      orden: status.orden
     });
     setShowModal(true);
   };
@@ -37,62 +65,207 @@ const StatusManager = () => {
   const handleAdd = () => {
     setEditingStatus(null);
     setFormData({
-      name: '',
-      description: '',
+      nombre: '',
+      descripcion: '',
       color: '#6c757d',
-      active: true,
-      order: statuses.length + 1
+      activo: true,
+      orden: statuses.length + 1
     });
     setShowModal(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingStatus) {
+    try {
+      setLoading(true);
+      const url = editingStatus 
+        ? `${API_URL}/api/estados/${editingStatus.id}`
+        : `${API_URL}/api/estados`;
+      
+      const method = editingStatus ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error en la operación');
+      }
+
+      const result = await response.json();
+      
+      if (editingStatus) {
+        setStatuses(statuses.map(s =>
+          s.id === editingStatus.id ? result : s
+        ));
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Estado actualizado correctamente'
+        });
+      } else {
+        setStatuses([...statuses, result]);
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Estado creado correctamente'
+        });
+      }
+
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Error en la operación'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: '¿Está seguro?',
+      text: "Esta acción no se puede deshacer",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/estados/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al eliminar');
+        }
+
+        setStatuses(statuses.filter(s => s.id !== id));
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'Estado eliminado correctamente'
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Error al eliminar estado'
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const toggleActive = async (id) => {
+    try {
+      const status = statuses.find(s => s.id === id);
+      if (!status) return;
+
+      const response = await fetch(`${API_URL}/api/estados/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...status,
+          activo: !status.activo
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar estado');
+      }
+
+      const updatedStatus = await response.json();
       setStatuses(statuses.map(s =>
-        s.id === editingStatus.id
-          ? { ...s, ...formData }
-          : s
+        s.id === id ? updatedStatus : s
       ));
-    } else {
-      const newStatus = {
-        id: Date.now(),
-        ...formData
-      };
-      setStatuses([...statuses, newStatus]);
-    }
-
-    setShowModal(false);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('¿Está seguro de eliminar este estado?')) {
-      setStatuses(statuses.filter(s => s.id !== id));
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al cambiar el estado'
+      });
     }
   };
 
-  const toggleActive = (id) => {
-    setStatuses(statuses.map(s =>
-      s.id === id ? { ...s, active: !s.active } : s
-    ));
-  };
+  const moveStatus = async (id, direction) => {
+    try {
+      const currentStatus = statuses.find(s => s.id === id);
+      if (!currentStatus) return;
 
-  const moveStatus = (id, direction) => {
-    const currentStatus = statuses.find(s => s.id === id);
-    if (!currentStatus) return;
+      const newOrder = direction === 'up' ? currentStatus.orden - 1 : currentStatus.orden + 1;
+      const swapStatus = statuses.find(s => s.orden === newOrder);
 
-    const newOrder = direction === 'up' ? currentStatus.order - 1 : currentStatus.order + 1;
-    const swapStatus = statuses.find(s => s.order === newOrder);
+      if (swapStatus) {
+        // Actualizar ambos estados
+        const response = await fetch(`${API_URL}/api/estados/orden/actualizar`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            estados: [
+              { id: id, orden: newOrder },
+              { id: swapStatus.id, orden: currentStatus.orden }
+            ]
+          }),
+        });
 
-    if (swapStatus) {
-      setStatuses(statuses.map(s => {
-        if (s.id === id) return { ...s, order: newOrder };
-        if (s.id === swapStatus.id) return { ...s, order: currentStatus.order };
-        return s;
-      }));
+        if (!response.ok) {
+          throw new Error('Error al actualizar el orden');
+        }
+
+        const updatedStatuses = await response.json();
+        setStatuses(updatedStatuses);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al cambiar el orden'
+      });
     }
   };
+
+  if (loading && statuses.length === 0) {
+    return (
+      <div className="status-manager fade-in">
+        <div className="row mb-4">
+          <div className="col-12">
+            <h1 className="text-mass-blue mb-0">Gestión de Estados</h1>
+            <p className="text-muted">Configura los estados de los pedidos y su flujo</p>
+          </div>
+        </div>
+        <div className="text-center py-5">
+          <div className="spinner-border text-mass-blue" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Cargando estados...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="status-manager fade-in">
@@ -117,7 +290,7 @@ const StatusManager = () => {
               />
               <Search className="search-icon" size={16} />
             </div>
-            <button className="btn btn-mass-yellow" onClick={handleAdd}>
+            <button className="btn btn-mass-yellow" onClick={handleAdd} disabled={loading}>
               <Plus size={16} className="me-1" />
               Agregar Estado
             </button>
@@ -144,18 +317,18 @@ const StatusManager = () => {
                       <button
                         className="btn btn-sm btn-outline-secondary"
                         onClick={() => moveStatus(status.id, 'up')}
-                        disabled={status.order === 1}
+                        disabled={status.orden === 1 || loading}
                       >
                         <ArrowUp size={12} />
                       </button>
                       <button
                         className="btn btn-sm btn-outline-secondary"
                         onClick={() => moveStatus(status.id, 'down')}
-                        disabled={status.order === statuses.length}
+                        disabled={status.orden === statuses.length || loading}
                       >
                         <ArrowDown size={12} />
                       </button>
-                      <span className="align-self-center fw-bold">{status.order}</span>
+                      <span className="align-self-center fw-bold">{status.orden}</span>
                     </div>
                   </td>
                   <td>
@@ -163,10 +336,10 @@ const StatusManager = () => {
                       className="badge"
                       style={{ backgroundColor: status.color, color: 'white' }}
                     >
-                      {status.name}
+                      {status.nombre}
                     </span>
                   </td>
-                  <td>{status.description}</td>
+                  <td>{status.descripcion || 'Sin descripción'}</td>
                   <td>
                     <div className="d-flex align-items-center gap-2">
                       <div
@@ -182,11 +355,12 @@ const StatusManager = () => {
                   </td>
                   <td>
                     <button
-                      className={`badge ${status.active ? 'badge-success' : 'badge-danger'}`}
+                      className={`badge ${status.activo ? 'badge-success' : 'badge-danger'}`}
                       onClick={() => toggleActive(status.id)}
                       style={{ border: 'none', cursor: 'pointer' }}
+                      disabled={loading}
                     >
-                      {status.active ? 'Activo' : 'Inactivo'}
+                      {status.activo ? 'Activo' : 'Inactivo'}
                     </button>
                   </td>
                   <td>
@@ -194,6 +368,7 @@ const StatusManager = () => {
                       className="btn-action btn-edit me-1"
                       onClick={() => handleEdit(status)}
                       title="Editar"
+                      disabled={loading}
                     >
                       <Edit size={14} />
                     </button>
@@ -201,6 +376,7 @@ const StatusManager = () => {
                       className="btn-action btn-delete"
                       onClick={() => handleDelete(status.id)}
                       title="Eliminar"
+                      disabled={loading}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -209,6 +385,11 @@ const StatusManager = () => {
               ))}
             </tbody>
           </table>
+          {filteredStatuses.length === 0 && !loading && (
+            <div className="text-center py-4">
+              <p className="text-muted">No se encontraron estados</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -224,6 +405,7 @@ const StatusManager = () => {
                   type="button"
                   className="btn-close"
                   onClick={() => setShowModal(false)}
+                  disabled={loading}
                 ></button>
               </div>
               <form onSubmit={handleSubmit}>
@@ -233,9 +415,10 @@ const StatusManager = () => {
                     <input
                       type="text"
                       className="form-control"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="form-group">
@@ -243,8 +426,9 @@ const StatusManager = () => {
                     <textarea
                       className="form-control"
                       rows={3}
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      value={formData.descripcion}
+                      onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                      disabled={loading}
                     ></textarea>
                   </div>
                   <div className="row">
@@ -257,6 +441,7 @@ const StatusManager = () => {
                           value={formData.color}
                           onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                           required
+                          disabled={loading}
                         />
                       </div>
                     </div>
@@ -267,9 +452,10 @@ const StatusManager = () => {
                           type="number"
                           min="1"
                           className="form-control"
-                          value={formData.order}
-                          onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                          value={formData.orden}
+                          onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value) })}
                           required
+                          disabled={loading}
                         />
                       </div>
                     </div>
@@ -278,11 +464,12 @@ const StatusManager = () => {
                     <input
                       type="checkbox"
                       className="form-check-input"
-                      id="active"
-                      checked={formData.active}
-                      onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                      id="activo"
+                      checked={formData.activo}
+                      onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
+                      disabled={loading}
                     />
-                    <label className="form-check-label" htmlFor="active">
+                    <label className="form-check-label" htmlFor="activo">
                       Estado activo
                     </label>
                   </div>
@@ -292,11 +479,19 @@ const StatusManager = () => {
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => setShowModal(false)}
+                    disabled={loading}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="btn btn-mass-blue">
-                    {editingStatus ? 'Actualizar' : 'Guardar'}
+                  <button type="submit" className="btn btn-mass-blue" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        {editingStatus ? 'Actualizando...' : 'Guardando...'}
+                      </>
+                    ) : (
+                      editingStatus ? 'Actualizar' : 'Guardar'
+                    )}
                   </button>
                 </div>
               </form>

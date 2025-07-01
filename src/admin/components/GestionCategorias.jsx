@@ -1,38 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import swal from 'sweetalert2';
 //import { mockCategories } from '../../data/mockData.jsx';
-
+const URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const CategoryManager = () => {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    active: true
+    estado: true
   });
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/api/categorias`;
-  useEffect(() => {
-    axios.get(API_URL)
-      .then((res) => {
-        console.log('📦 Datos recibidos desde backend:', res.data);
-        setCategories(res.data);
-      })
-      .catch((err) => {
-        import('sweetalert2').then((Swal) => {
-          Swal.default.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudieron obtener las categorías.',
-          });
-        });
-      });
-  }, []);
+  const API_URL = `${URL}/api/categorias`;
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(API_URL);
+        console.log('📦 Categorías recibidas:', res.data);
+        setCategories(res.data);
+      } catch (error) {
+        swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron obtener las categorías.',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const filteredCategories = Array.isArray(categories)
     ? categories.filter(category =>
@@ -41,13 +46,12 @@ const CategoryManager = () => {
     )
     : [];
 
-
   const handleEdit = (category) => {
     setEditingCategory(category);
     setFormData({
       nombre: category.nombre,
       descripcion: category.descripcion,
-      active: category.active
+      estado: category.estado?.nombre === 'Activo'
     });
     setShowModal(true);
   };
@@ -57,7 +61,7 @@ const CategoryManager = () => {
     setFormData({
       nombre: '',
       descripcion: '',
-      active: true
+      estado: true
     });
     setShowModal(true);
   };
@@ -65,99 +69,132 @@ const CategoryManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.nombre.trim()) {
+      swal.fire({
+        icon: 'warning',
+        title: 'Campo requerido',
+        text: 'El nombre de la categoría es obligatorio',
+      });
+      return;
+    }
+
     try {
+      setLoading(true);
+      const form = new FormData();
+      form.append('nombre', formData.nombre);
+      form.append('descripcion', formData.descripcion);
+      form.append('estado', formData.estado.toString());
+
       if (editingCategory) {
         // Actualizar
-        await axios.put(`${API_URL}/${editingCategory.id}`, {
-          nombre: formData.nombre,
-          descripcion: formData.descripcion,
-          active: formData.active,
+        const response = await axios.put(`${API_URL}/${editingCategory.id}`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
 
         setCategories(categories.map(c =>
-          c.id === editingCategory.id
-            ? { ...c, ...formData }
-            : c
+          c.id === editingCategory.id ? response.data : c
         ));
+        
+        swal.fire({
+          icon: 'success',
+          title: 'Actualizada',
+          text: 'Categoría actualizada exitosamente',
+        });
       } else {
         // Crear
-        const res = await axios.post(API_URL, {
-          nombre: formData.nombre,
-          descripcion: formData.descripcion,
-          active: formData.active,
+        const res = await axios.post(API_URL, form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
         setCategories([res.data, ...categories]);
+        
+        swal.fire({
+          icon: 'success',
+          title: 'Creada',
+          text: 'Categoría creada exitosamente',
+        });
       }
 
       setShowModal(false);
     } catch (error) {
-        Swal.default.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo guardar la categoría.',
-        });
-      
+      swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.response?.data?.message || 'No se pudo guardar la categoría.',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
+    const result = await swal.fire({
       title: '¿Está seguro de eliminar esta categoría?',
       text: "Esta acción no se puede deshacer.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
 
     if (result.isConfirmed) {
       try {
+        setLoading(true);
         await axios.delete(`${API_URL}/${id}`);
         setCategories(categories.filter(c => c.id !== id));
-        Swal.fire({
+        swal.fire({
           icon: 'success',
-          title: 'Eliminado',
+          title: 'Eliminada',
           text: 'La categoría ha sido eliminada.',
           timer: 1500,
           showConfirmButton: false
         });
       } catch (error) {
-        Swal.fire({
+        swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'No se pudo eliminar la categoría.',
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-
-  const toggleActive = async (id) => {
-    const category = categories.find(c => c.id === id);
-    if (!category) return;
-
+  const toggleActive = async (category) => {
     try {
-      await axios.put(`${API_URL}/${id}`, {
-        nombre: category.nombre,
-        descripcion: category.descripcion,
-        active: !category.active,
+      setLoading(true);
+      const newEstado = category.estado?.nombre === 'Activo' ? false : true;
+      
+      const form = new FormData();
+      form.append('estado', newEstado.toString());
+      
+      const response = await axios.put(`${API_URL}/${category.id}`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      setCategories(categories.map(c =>
-        c.id === id ? { ...c, active: !c.active } : c
-      ));
+      
+      setCategories(categories.map(c => c.id === category.id ? response.data : c));
     } catch (error) {
-      Swal.default.fire({
+      swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'No se pudo cambiar el estado de la categoría.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading && categories.length === 0) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
+        <div className="spinner-border text-mass-blue" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="category-manager fade-in">
@@ -182,7 +219,7 @@ const CategoryManager = () => {
               />
               <Search className="search-icon" size={16} />
             </div>
-            <button className="btn btn-mass-yellow" onClick={handleAdd}>
+            <button className="btn btn-mass-yellow" onClick={handleAdd} disabled={loading}>
               <Plus size={16} className="me-1" />
               Agregar Categoría
             </button>
@@ -207,16 +244,17 @@ const CategoryManager = () => {
                   <td>{category.descripcion}</td>
                   <td>
                     <span className="badge badge-primary">
-                      {category.productsCount} productos
+                      {category.productos?.length || 0} productos
                     </span>
                   </td>
                   <td>
                     <button
-                      className={`badge ${category.activo ? 'badge-success' : 'badge-danger'}`}
-                      onClick={() => toggleActive(category.id)}
+                      className={`badge ${category.estado?.nombre === 'Activo' ? 'badge-success' : 'badge-danger'}`}
+                      onClick={() => toggleActive(category)}
                       style={{ border: 'none', cursor: 'pointer' }}
+                      disabled={loading}
                     >
-                      {category.activo ? 'Activa' : 'Inactiva'}
+                      {category.estado?.nombre === 'Activo' ? 'Activa' : 'Inactiva'}
                     </button>
                   </td>
                   <td>
@@ -224,6 +262,7 @@ const CategoryManager = () => {
                       className="btn-action btn-edit me-1"
                       onClick={() => handleEdit(category)}
                       title="Editar"
+                      disabled={loading}
                     >
                       <Edit size={14} />
                     </button>
@@ -231,6 +270,7 @@ const CategoryManager = () => {
                       className="btn-action btn-delete"
                       onClick={() => handleDelete(category.id)}
                       title="Eliminar"
+                      disabled={loading}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -255,6 +295,7 @@ const CategoryManager = () => {
                   type="button"
                   className="btn-close"
                   onClick={() => setShowModal(false)}
+                  disabled={loading}
                 ></button>
               </div>
               <form onSubmit={handleSubmit}>
@@ -267,6 +308,7 @@ const CategoryManager = () => {
                       value={formData.nombre}
                       onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="form-group">
@@ -276,17 +318,19 @@ const CategoryManager = () => {
                       rows={3}
                       value={formData.descripcion}
                       onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                      disabled={loading}
                     ></textarea>
                   </div>
                   <div className="form-check">
                     <input
                       type="checkbox"
                       className="form-check-input"
-                      id="active"
-                      checked={formData.active}
-                      onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                      id="estado"
+                      checked={formData.estado}
+                      onChange={(e) => setFormData({ ...formData, estado: e.target.checked })}
+                      disabled={loading}
                     />
-                    <label className="form-check-label" htmlFor="active">
+                    <label className="form-check-label" htmlFor="estado">
                       Categoría activa
                     </label>
                   </div>
@@ -296,11 +340,19 @@ const CategoryManager = () => {
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => setShowModal(false)}
+                    disabled={loading}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="btn btn-mass-blue">
-                    {editingCategory ? 'Actualizar' : 'Guardar'}
+                  <button type="submit" className="btn btn-mass-blue" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        {editingCategory ? 'Actualizando...' : 'Guardando...'}
+                      </>
+                    ) : (
+                      editingCategory ? 'Actualizar' : 'Guardar'
+                    )}
                   </button>
                 </div>
               </form>

@@ -1,31 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
-import { mockPaymentMethods } from '../../data/mockData.jsx';
+import Swal from 'sweetalert2';
+
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 const PaymentMethodManager = () => {
-  const [paymentMethods, setPaymentMethods] = useState(mockPaymentMethods);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingMethod, setEditingMethod] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    active: true,
-    commission: 0
+    nombre: '',
+    descripcion: '',
+    comision: 0
   });
 
+  // Cargar métodos de pago desde el backend
+  const loadPaymentMethods = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/estados/orden/actualizar`);
+      if (!response.ok) {
+        throw new Error('Error al cargar métodos de pago');
+      }
+      const data = await response.json();
+      setPaymentMethods(data);
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar los métodos de pago'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPaymentMethods();
+  }, []);
+
   const filteredMethods = paymentMethods.filter(method =>
-    method.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    method.description.toLowerCase().includes(searchTerm.toLowerCase())
+    method.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (method.descripcion && method.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleEdit = (method) => {
     setEditingMethod(method);
     setFormData({
-      name: method.name,
-      description: method.description,
-      active: method.active,
-      commission: method.commission
+      nombre: method.nombre,
+      descripcion: method.descripcion || '',
+      comision: method.comision || 0
     });
     setShowModal(true);
   };
@@ -33,45 +60,131 @@ const PaymentMethodManager = () => {
   const handleAdd = () => {
     setEditingMethod(null);
     setFormData({
-      name: '',
-      description: '',
-      active: true,
-      commission: 0
+      nombre: '',
+      descripcion: '',
+      comision: 0
     });
     setShowModal(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingMethod) {
-      setPaymentMethods(paymentMethods.map(m =>
-        m.id === editingMethod.id
-          ? { ...m, ...formData }
-          : m
-      ));
-    } else {
-      const newMethod = {
-        id: Date.now(),
-        ...formData
-      };
-      setPaymentMethods([newMethod, ...paymentMethods]);
+    try {
+      setLoading(true);
+      const url = editingMethod 
+        ? `${API_URL}/api/metodos-pago/${editingMethod.id}`
+        : `${API_URL}/api/metodos-pago`;
+      
+      const method = editingMethod ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error en la operación');
+      }
+
+      const result = await response.json();
+      
+      if (editingMethod) {
+        setPaymentMethods(paymentMethods.map(m =>
+          m.id === editingMethod.id ? result : m
+        ));
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Método de pago actualizado correctamente'
+        });
+      } else {
+        setPaymentMethods([result, ...paymentMethods]);
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Método de pago creado correctamente'
+        });
+      }
+
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Error en la operación'
+      });
+    } finally {
+      setLoading(false);
     }
-
-    setShowModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Está seguro de eliminar este método de pago?')) {
-      setPaymentMethods(paymentMethods.filter(m => m.id !== id));
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: '¿Está seguro?',
+      text: "Esta acción no se puede deshacer",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/metodos-pago/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al eliminar');
+        }
+
+        setPaymentMethods(paymentMethods.filter(m => m.id !== id));
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'Método de pago eliminado correctamente'
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Error al eliminar método de pago'
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const toggleActive = (id) => {
-    setPaymentMethods(paymentMethods.map(m =>
-      m.id === id ? { ...m, active: !m.active } : m
-    ));
-  };
+  if (loading && paymentMethods.length === 0) {
+    return (
+      <div className="payment-method-manager fade-in">
+        <div className="row mb-4">
+          <div className="col-12">
+            <h1 className="text-mass-blue mb-0">Métodos de Pago</h1>
+            <p className="text-muted">Gestiona los métodos de pago disponibles en el sistema</p>
+          </div>
+        </div>
+        <div className="text-center py-5">
+          <div className="spinner-border text-mass-blue" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Cargando métodos de pago...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="payment-method-manager fade-in">
@@ -96,7 +209,7 @@ const PaymentMethodManager = () => {
               />
               <Search className="search-icon" size={16} />
             </div>
-            <button className="btn btn-mass-yellow" onClick={handleAdd}>
+            <button className="btn btn-mass-yellow" onClick={handleAdd} disabled={loading}>
               <Plus size={16} className="me-1" />
               Agregar Método
             </button>
@@ -110,34 +223,27 @@ const PaymentMethodManager = () => {
                 <th>Método</th>
                 <th>Descripción</th>
                 <th>Comisión</th>
-                <th>Estado</th>
+                <th>Fecha Creación</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredMethods.map((method) => (
                 <tr key={method.id}>
-                  <td><strong>{method.name}</strong></td>
-                  <td>{method.description}</td>
+                  <td><strong>{method.nombre}</strong></td>
+                  <td>{method.descripcion || 'Sin descripción'}</td>
                   <td>
-                    <span className={`badge ${method.commission === 0 ? 'badge-success' : 'badge-warning'}`}>
-                      {method.commission}%
+                    <span className={`badge ${method.comision === 0 ? 'badge-success' : 'badge-warning'}`}>
+                      {method.comision || 0}%
                     </span>
                   </td>
-                  <td>
-                    <button
-                      className={`badge ${method.active ? 'badge-success' : 'badge-danger'}`}
-                      onClick={() => toggleActive(method.id)}
-                      style={{ border: 'none', cursor: 'pointer' }}
-                    >
-                      {method.active ? 'Activo' : 'Inactivo'}
-                    </button>
-                  </td>
+                  <td>{new Date(method.creadoEn).toLocaleDateString()}</td>
                   <td>
                     <button
                       className="btn-action btn-edit me-1"
                       onClick={() => handleEdit(method)}
                       title="Editar"
+                      disabled={loading}
                     >
                       <Edit size={14} />
                     </button>
@@ -145,6 +251,7 @@ const PaymentMethodManager = () => {
                       className="btn-action btn-delete"
                       onClick={() => handleDelete(method.id)}
                       title="Eliminar"
+                      disabled={loading}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -153,6 +260,11 @@ const PaymentMethodManager = () => {
               ))}
             </tbody>
           </table>
+          {filteredMethods.length === 0 && !loading && (
+            <div className="text-center py-4">
+              <p className="text-muted">No se encontraron métodos de pago</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -169,6 +281,7 @@ const PaymentMethodManager = () => {
                   type="button"
                   className="btn-close"
                   onClick={() => setShowModal(false)}
+                  disabled={loading}
                 ></button>
               </div>
               <form onSubmit={handleSubmit}>
@@ -178,9 +291,10 @@ const PaymentMethodManager = () => {
                     <input
                       type="text"
                       className="form-control"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="form-group">
@@ -188,8 +302,9 @@ const PaymentMethodManager = () => {
                     <textarea
                       className="form-control"
                       rows={3}
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      value={formData.descripcion}
+                      onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                      disabled={loading}
                     ></textarea>
                   </div>
                   <div className="form-group">
@@ -200,22 +315,11 @@ const PaymentMethodManager = () => {
                       min="0"
                       max="100"
                       className="form-control"
-                      value={formData.commission}
-                      onChange={(e) => setFormData({ ...formData, commission: parseFloat(e.target.value) || 0 })}
+                      value={formData.comision}
+                      onChange={(e) => setFormData({ ...formData, comision: parseFloat(e.target.value) || 0 })}
+                      disabled={loading}
                     />
                     <small className="text-muted">Porcentaje de comisión aplicado a las transacciones</small>
-                  </div>
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="active"
-                      checked={formData.active}
-                      onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                    />
-                    <label className="form-check-label" htmlFor="active">
-                      Método activo
-                    </label>
                   </div>
                 </div>
                 <div className="modal-footer">
@@ -223,11 +327,19 @@ const PaymentMethodManager = () => {
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => setShowModal(false)}
+                    disabled={loading}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="btn btn-mass-blue">
-                    {editingMethod ? 'Actualizar' : 'Guardar'}
+                  <button type="submit" className="btn btn-mass-blue" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        {editingMethod ? 'Actualizando...' : 'Guardando...'}
+                      </>
+                    ) : (
+                      editingMethod ? 'Actualizar' : 'Guardar'
+                    )}
                   </button>
                 </div>
               </form>
