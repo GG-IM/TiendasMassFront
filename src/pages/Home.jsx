@@ -45,7 +45,7 @@ const Home = () => {
                 <p>
                   ¡No te pierdas los mejores precios del barrio aquí!
                 </p>
-                <a href="/precios-mass" className="btn btn-light mt-3">
+                <a href="/admin" className="btn btn-light mt-3">
                   QUIERO VER
                 </a>
               </div>

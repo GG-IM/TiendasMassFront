@@ -7,6 +7,7 @@ import ProductCard from '../components/productos/productCard';
 import '../styles/SearchResults.css';
 import ProductDetailModal from '../components/productos/detalleproductomodal';
 
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 const ResultadosBusqueda = () => {
     const [productos, setProductos] = useState([]);
@@ -31,7 +32,7 @@ const ResultadosBusqueda = () => {
         const buscarProductos = async () => {
             if (!query) return;
             try {
-                const res = await fetch(`http://localhost:3000/api/products?q=${encodeURIComponent(query)}`);
+                const res = await fetch(`${API_URL}/api/products?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
                 setProductos(data);
             } catch (error) {
