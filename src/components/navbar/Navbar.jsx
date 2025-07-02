@@ -181,6 +181,7 @@ const MobileMenu = ({
       <li><Link to="/" onClick={closeMenu}>Inicio</Link></li>
       <li><Link to="/categorias" onClick={closeMenu}>Categorías</Link></li>
       <li><Link to="/contacto" onClick={closeMenu}>Contacto</Link></li>
+      <li><Link to="/admin" onClick={closeMenu}>quiero ser admin</Link></li>
     </ul>
 
     <div className="navbar-mobile-actions">
