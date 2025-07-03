@@ -162,7 +162,8 @@ const MobileMenu = ({
   nombreUsuario, 
   handleLoginClick, 
   handleLogout, 
-  mostrarCarrito 
+  mostrarCarrito, 
+  usuario 
 }) => (
   <div className={`navbar-content${menuOpen ? ' open' : ''}`}>
     <div className="navbar-search-mobile">
@@ -181,7 +182,13 @@ const MobileMenu = ({
       <li><Link to="/" onClick={closeMenu}>Inicio</Link></li>
       <li><Link to="/categorias" onClick={closeMenu}>Categorías</Link></li>
       <li><Link to="/contacto" onClick={closeMenu}>Contacto</Link></li>
-      <li><Link to="/admin" onClick={closeMenu}>quiero ser admin</Link></li>
+      {usuario && (
+        ["admin", "ADMIN", "Administrador"].includes(usuario.rol?.nombre) ||
+        usuario.rol?.id === 1 ||
+        usuario.rol?.id === 3
+      ) && (
+        <li><Link to="/admin" onClick={closeMenu}>Panel de Administrador</Link></li>
+      )}
     </ul>
 
     <div className="navbar-mobile-actions">
@@ -218,6 +225,15 @@ const Navbar = ({ abrirModal }) => {
   const isLoggedIn = Boolean(usuario);
   const nombreUsuario = usuario?.nombre || 'Usuario';
   const totalItems = carrito.reduce((acc, producto) => acc + producto.cantidad, 0);
+
+  const esAdmin = usuario && (
+    ["admin", "ADMIN", "Administrador"].includes(usuario.rol?.nombre) ||
+    usuario.rol?.id === 1 ||
+    usuario.rol?.id === 3
+  );
+
+  // Log para depuración
+  console.log('Usuario actual:', usuario);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -299,6 +315,7 @@ const Navbar = ({ abrirModal }) => {
             handleLoginClick={handleLoginClick}
             handleLogout={handleLogout}
             mostrarCarrito={mostrarCarrito}
+            usuario={usuario}
           />
 
           <div className="navbar-actions">
@@ -310,6 +327,11 @@ const Navbar = ({ abrirModal }) => {
                 </div>
               )}
             </div>
+            {esAdmin && (
+              <Link to="/admin" className="admin-btn" style={{ marginRight: 12 }}>
+                Panel de Administrador
+              </Link>
+            )}
             <UserButton
               isLoggedIn={isLoggedIn}
               nombreUsuario={nombreUsuario}
