@@ -254,13 +254,39 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
         throw new Error('Debes seleccionar un método de pago');
       }
 
+      // 1. Obtener precios actualizados del backend
+      const productIds = carrito.map(item => parseInt(item.id));
+      const productosActualizadosResp = await fetch(`${API_URL}/api/productos/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: productIds })
+      });
+      if (!productosActualizadosResp.ok) {
+        throw new Error('No se pudieron obtener los precios actualizados de los productos');
+      }
+      const productosActualizados = await productosActualizadosResp.json();
+      // Mapear por id para acceso rápido
+      const productosMap = {};
+      productosActualizados.forEach(p => { productosMap[p.id] = p; });
+
+      // 2. Actualizar carrito temporalmente con los precios actuales
+      const carritoActualizado = carrito.map(item => {
+        const prod = productosMap[item.id];
+        return prod ? { ...item, precio: prod.precio } : item;
+      });
+
+      // 3. Calcular subtotal, impuestos y total con precios actualizados
+      const subtotal = carritoActualizado.reduce((acc, item) => acc + (parseFloat(item.precio) * item.cantidad), 0);
+      const shippingCost = formData.deliveryType === 'pickup' ? 0 : 9.99;
+      const taxes = +(subtotal * 0.08).toFixed(2);
+      const total = +(subtotal + shippingCost + taxes).toFixed(2);
+
       // Determinar el método de pago a enviar
       let metodoPagoId = null;
       if (paymentMethod === 'userCard') {
         if (!selectedCardId) {
           throw new Error('Debes seleccionar una tarjeta');
         }
-        // Para tarjetas del usuario, buscar cualquier método que sea de tarjeta
         const metodoTarjeta = metodosPago.find(m => 
           m.tipo === 'tarjeta' || 
           m.nombre?.toLowerCase().includes('tarjeta') ||
@@ -271,7 +297,6 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
         if (metodoTarjeta) {
           metodoPagoId = metodoTarjeta.id;
         } else {
-          // Si no hay método específico de tarjeta, usar el primer método disponible
           if (metodosPago.length > 0) {
             metodoPagoId = metodosPago[0].id;
             console.warn('No se encontró método específico de tarjeta, usando:', metodosPago[0].nombre);
@@ -301,17 +326,15 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
         direccionEnvio = formData.selectedStore;
       }
 
-      // ✅ ESTRUCTURA ADAPTADA AL BACKEND
+      // ESTRUCTURA ADAPTADA AL BACKEND
       const pedidoData = {
-        usuarioId: usuario?.id || null, // Si no hay usuario, puede ser null
+        usuarioId: usuario?.id || null,
         direccionEnvio: direccionEnvio,
         metodoPagoId: metodoPagoId,
         montoTotal: total, // este total ya tiene impuestos y envío
-        // ✅ CAMBIO IMPORTANTE: "productos" → "detalles"
-        detalles: carrito.map(item => ({
+        detalles: carritoActualizado.map(item => ({
           productoId: parseInt(item.id),
           cantidad: parseInt(item.cantidad)
-          // ❌ NO enviar precio - el backend lo calcula
         }))
       };
 
@@ -379,11 +402,11 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
         }));
       } else {
         // Fallback: usar carrito local
-        detallesPedidos = carrito.map((item, index) => ({
+        detallesPedidos = carritoActualizado.map((item, index) => ({
           id: `detalle_${result.pedidoId}_${index}`,
           cantidad: item.cantidad,
-          precio: parsePrice(item.precio),
-          subtotal: parsePrice(item.precio) * item.cantidad,
+          precio: parseFloat(item.precio),
+          subtotal: parseFloat(item.precio) * item.cantidad,
           producto: {
             id: item.id,
             nombre: item.nombre || item.title || 'Producto sin nombre'
@@ -402,7 +425,6 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
           nombre: metodoSeleccionado?.nombre || result.metodoPago?.nombre || 'Método no especificado'
         },
         detallesPedidos,
-        // Agregar resumen para el paso 3
         resumen: {
           items: detallesPedidos,
           subtotal: subtotal,
