@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import AdminLogin from '../admin/components/AdminLogin';
+import { Navigate } from 'react-router-dom';
+import { useUsuario } from '../context/userContext';
 import SetupAdmin from '../admin/components/SetupAdmin';
 
+const API_URL = "http://localhost:443";
 
-const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const AdminRoute = ({ children }) => {
-  const location = useLocation();
-  const adminToken = localStorage.getItem('adminToken');
-  const adminUser = localStorage.getItem('adminUser');
+  const { usuario } = useUsuario();
   const [checkingSetup, setCheckingSetup] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
 
-  // Verificar estado del sistema al cargar
   useEffect(() => {
     checkSetupStatus();
   }, []);
@@ -21,74 +18,40 @@ const AdminRoute = ({ children }) => {
     try {
       const response = await fetch(`${API_URL}/api/setup/status`);
       const data = await response.json();
-      
       setNeedsSetup(data.needsSetup);
       setCheckingSetup(false);
     } catch (error) {
-      console.error('Error al verificar estado del sistema:', error);
       setCheckingSetup(false);
-      setNeedsSetup(false); // Asumir que no necesita setup si hay error
+      setNeedsSetup(false);
     }
   };
 
-  // Si está verificando el setup, mostrar loading
   if (checkingSetup) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid rgba(255, 255, 255, 0.3)',
-            borderTop: '4px solid white',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }}></div>
-          <p>Verificando sistema...</p>
-        </div>
-      </div>
-    );
+    return <div>Verificando sistema...</div>;
   }
 
-  // Si necesita setup, mostrar componente de setup
   if (needsSetup) {
     return <SetupAdmin />;
   }
 
-  // Si no hay token de admin, redirigir al login
-  if (!adminToken || !adminUser) {
-    return <AdminLogin />;
+  // Si no hay usuario autenticado, redirigir al login normal
+  if (!usuario) {
+    return <Navigate to="/login" />;
   }
 
-  try {
-    // Verificar que el usuario sea administrador
-    const userData = JSON.parse(adminUser);
-    const rolNombre = userData.rol?.nombre?.toLowerCase();
-    
-    if (!rolNombre || (!rolNombre.includes('admin') && !rolNombre.includes('administrador'))) {
-      // Si no es admin, limpiar datos y redirigir al login
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminUser');
-      return <AdminLogin />;
-    }
+  // Verificar si es admin
+  const esAdmin = usuario && (
+    ["admin", "ADMIN", "Administrador"].includes(usuario.rol?.nombre) ||
+    usuario.rol?.id === 1 ||
+    usuario.rol?.id === 3
+  );
 
-    // Si es admin, mostrar el contenido protegido
-    return children;
-  } catch (error) {
-    console.error('Error al verificar datos de admin:', error);
-    // Si hay error al parsear, limpiar datos y redirigir al login
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
-    return <AdminLogin />;
+  if (!esAdmin) {
+    return <Navigate to="/" />;
   }
+
+  // Si es admin, mostrar el contenido protegido
+  return children;
 };
 
 export default AdminRoute; 
