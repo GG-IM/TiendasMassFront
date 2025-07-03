@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useUsuario } from '../context/userContext';
 import SetupAdmin from '../admin/components/SetupAdmin';
 
-const API_URL = "http://localhost:443";
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 
 const AdminRoute = ({ children }) => {
   const { usuario } = useUsuario();
