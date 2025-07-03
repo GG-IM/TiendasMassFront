@@ -258,7 +258,7 @@ export default function Checkout({ activeStep, setActiveStep, formData, setFormD
       const productIds = carrito.map(item => parseInt(item.id));
       const productosActualizadosResp = await fetch(`${API_URL}/api/products/bulk`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },  
         body: JSON.stringify({ ids: productIds })
       });
       if (!productosActualizadosResp.ok) {
