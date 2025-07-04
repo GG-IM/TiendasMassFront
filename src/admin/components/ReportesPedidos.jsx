@@ -12,7 +12,7 @@ const OrderReports = () => {
   const [showOrderDetails, setShowOrderDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
-const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
+const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net/api/pedidos";
 
   useEffect(() => {
     fetchOrders();
