@@ -94,7 +94,8 @@ const UserButton = ({
   handleLoginClick, 
   handleLogout, 
   isMobile = false, 
-  closeMenu 
+  closeMenu, 
+  esAdmin // nuevo prop
 }) => {
   if (!isLoggedIn) {
     return (
@@ -117,6 +118,14 @@ const UserButton = ({
         {isMobile ? nombreUsuario : `¡Hola!, ${nombreUsuario}`}
       </button>
       <ul className="dropdown-menu" aria-labelledby={isMobile ? "dropdownMenuButton" : "dropdownMenuButtonDesktop"}>
+        {esAdmin && (
+          <li>
+            <Link className="dropdown-item" to="/admin" onClick={isMobile ? closeMenu : undefined}>
+              <i className="bi bi-speedometer2" style={{ marginRight: 6, fontSize: 18 }}></i>
+              Panel de Administrador
+            </Link>
+          </li>
+        )}
         <li>
           <Link className="dropdown-item" to="/perfil" onClick={isMobile ? closeMenu : undefined}>
             Perfil
@@ -163,7 +172,8 @@ const MobileMenu = ({
   handleLoginClick, 
   handleLogout, 
   mostrarCarrito, 
-  usuario 
+  usuario, 
+  esAdmin // nuevo prop
 }) => (
   <div className={`navbar-content${menuOpen ? ' open' : ''}`}>
     <div className="navbar-search-mobile">
@@ -182,13 +192,6 @@ const MobileMenu = ({
       <li><Link to="/" onClick={closeMenu}>Inicio</Link></li>
       <li><Link to="/categorias" onClick={closeMenu}>Categorías</Link></li>
       <li><Link to="/contacto" onClick={closeMenu}>Contacto</Link></li>
-      {usuario && (
-        ["admin", "ADMIN", "Administrador"].includes(usuario.rol?.nombre) ||
-        usuario.rol?.id === 1 ||
-        usuario.rol?.id === 3
-      ) && (
-        <li><Link to="/admin" onClick={closeMenu}>Panel de Administrador</Link></li>
-      )}
     </ul>
 
     <div className="navbar-mobile-actions">
@@ -200,6 +203,7 @@ const MobileMenu = ({
         handleLogout={handleLogout}
         isMobile={true}
         closeMenu={closeMenu}
+        esAdmin={esAdmin}
       />
       {mostrarCarrito && (
         <div className="carrito-dropdown">
@@ -316,6 +320,7 @@ const Navbar = ({ abrirModal }) => {
             handleLogout={handleLogout}
             mostrarCarrito={mostrarCarrito}
             usuario={usuario}
+            esAdmin={esAdmin}
           />
 
           <div className="navbar-actions">
@@ -327,16 +332,12 @@ const Navbar = ({ abrirModal }) => {
                 </div>
               )}
             </div>
-            {esAdmin && (
-              <Link to="/admin" className="admin-btn" style={{ marginRight: 12 }}>
-                Panel de Administrador
-              </Link>
-            )}
             <UserButton
               isLoggedIn={isLoggedIn}
               nombreUsuario={nombreUsuario}
               handleLoginClick={handleLoginClick}
               handleLogout={handleLogout}
+              esAdmin={esAdmin}
             />
           </div>
         </div>
