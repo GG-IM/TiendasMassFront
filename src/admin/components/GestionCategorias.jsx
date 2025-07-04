@@ -3,7 +3,9 @@ import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import axios from 'axios';
 import swal from 'sweetalert2';
 //import { mockCategories } from '../../data/mockData.jsx';
+
 const URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
+
 const CategoryManager = () => {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +15,8 @@ const CategoryManager = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    estado: true
+    estado: true,
+    imagen: null // Añadir campo de imagen
   });
 
   const API_URL = `${URL}/api/categorias`;
@@ -51,7 +54,8 @@ const CategoryManager = () => {
     setFormData({
       nombre: category.nombre,
       descripcion: category.descripcion,
-      estado: category.estado?.nombre === 'Activo'
+      estado: category.estado?.nombre === 'Activo',
+      imagen: category.imagen // Cargar la URL de la imagen al editar
     });
     setShowModal(true);
   };
@@ -61,7 +65,8 @@ const CategoryManager = () => {
     setFormData({
       nombre: '',
       descripcion: '',
-      estado: true
+      estado: true,
+      imagen: null // Iniciar el campo imagen vacío
     });
     setShowModal(true);
   };
@@ -85,6 +90,11 @@ const CategoryManager = () => {
       form.append('descripcion', formData.descripcion);
       form.append('estado', formData.estado.toString());
 
+      // Si hay una imagen seleccionada, la agregamos al formulario
+      if (formData.imagen) {
+        form.append('imagen', formData.imagen);
+      }
+
       if (editingCategory) {
         // Actualizar
         const response = await axios.put(`${API_URL}/${editingCategory.id}`, form, {
@@ -94,7 +104,7 @@ const CategoryManager = () => {
         setCategories(categories.map(c =>
           c.id === editingCategory.id ? response.data : c
         ));
-        
+
         swal.fire({
           icon: 'success',
           title: 'Actualizada',
@@ -106,7 +116,7 @@ const CategoryManager = () => {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         setCategories([res.data, ...categories]);
-        
+
         swal.fire({
           icon: 'success',
           title: 'Creada',
@@ -166,14 +176,14 @@ const CategoryManager = () => {
     try {
       setLoading(true);
       const newEstado = category.estado?.nombre === 'Activo' ? false : true;
-      
+
       const form = new FormData();
       form.append('estado', newEstado.toString());
-      
+
       const response = await axios.put(`${API_URL}/${category.id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
+
       setCategories(categories.map(c => c.id === category.id ? response.data : c));
     } catch (error) {
       swal.fire({
@@ -333,6 +343,15 @@ const CategoryManager = () => {
                     <label className="form-check-label" htmlFor="estado">
                       Categoría activa
                     </label>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Imagen (opcional)</label>
+                    <input
+                      type="file"
+                      className="form-control"
+                      onChange={(e) => setFormData({ ...formData, imagen: e.target.files[0] })}
+                      disabled={loading}
+                    />
                   </div>
                 </div>
                 <div className="modal-footer">
