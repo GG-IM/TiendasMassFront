@@ -3,10 +3,11 @@ import { Edit, Trash2, Eye, Plus, Search } from 'lucide-react';
 import axios from 'axios';
 import swal from 'sweetalert2';
 
-const ProductManager = () => {
+const URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net"; // URL de Azure
+const API_URL = `${URL}/api/products`; // API de productos
+const CATEGORY_URL = `${URL}/api/categorias`; // API de categorías
 
-  const API_URL = 'http://localhost:3000/api/products';
-  const CATEGORY_URL = 'http://localhost:3000/api/categorias';
+const ProductManager = () => {
 
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -154,7 +155,7 @@ const ProductManager = () => {
     try {
       setLoading(true);
       if (editingProduct) {
-        const response = await axios.put(`${API_URL}/${editingProduct.id}`, form, {
+        const response = await axios.put(`${L}/${editingProduct.id}`, form, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         // Actualizar la lista de productos
@@ -165,7 +166,7 @@ const ProductManager = () => {
           text: 'Producto actualizado exitosamente',
         });
       } else {
-        const res = await axios.post(API_URL, form, {
+        const res = await axios.post(L, form, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         setProducts([res.data, ...products]);
@@ -203,7 +204,7 @@ const ProductManager = () => {
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        await axios.delete(`${API_URL}/${id}`);
+        await axios.delete(`${L}/${id}`);
         setProducts(products.filter(p => p.id !== id));
         swal.fire({
           icon: 'success',
@@ -231,7 +232,7 @@ const ProductManager = () => {
       const form = new FormData();
       form.append('estado', newEstado.toString());
       
-      const response = await axios.put(`${API_URL}/${product.id}`, form, {
+      const response = await axios.put(`${L}/${product.id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       
@@ -350,7 +351,7 @@ const ProductManager = () => {
                 <tr key={product.id}>
                   <td>
                     <img
-                      src={product.imagen ? `http://localhost:3000/${product.imagen}` : '/placeholder-image.jpg'}
+                      src={product.imagen ? `${URL}/${product.imagen}` : '/placeholder-image.jpg'}
                       alt={product.nombre}
                       className="rounded"
                       style={{ width: '50px', height: '50px', objectFit: 'cover' }}
@@ -594,7 +595,6 @@ const ProductManager = () => {
                     </div>
                   </div>
                 </div>
-
                 <div className="modal-footer">
                   <button
                     type="button"
