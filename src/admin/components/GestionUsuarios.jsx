@@ -22,7 +22,7 @@ const GestionUsuario = () => {
     active: true,
   });
 
-  const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
+  const API_URL = 'https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net';
 
   // Mapeo de roles de BD a nombres para mostrar
   const rolMapping = {
@@ -43,7 +43,7 @@ const GestionUsuario = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/roles`);
+      const response = await axios.get( `${API_URL}/api/roles`);  
       setRoles(response.data);
     } catch (error) {
       console.error('Error al obtener roles:', error);
@@ -51,26 +51,19 @@ const GestionUsuario = () => {
   };
 
   const fetchUsers = async () => {
-  try {
-    const response = await axios.get(API_URL);
-    if (!response.data || !Array.isArray(response.data)) {
-      console.error('Error: la respuesta no es un array o está vacía.');
-      return;
+    try {
+      const response = await axios.get(`${API_URL}/api/usuarios`);
+      const formatted = response.data.map(user => ({
+        ...user,
+        rol: rolMapping[user.rol?.nombre] || user.rol?.nombre || 'Cliente',
+        lastLogin: new Date().toISOString(),
+        active: true,
+      }));
+      setUsers(formatted);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
     }
-
-    const formatted = response.data.map(user => ({
-      ...user,
-      rol: rolMapping[user.rol?.nombre] || user.rol?.nombre || 'Cliente',
-      lastLogin: new Date().toISOString(),
-      active: true,
-    }));
-
-    setUsers(formatted);
-  } catch (error) {
-    console.error('Error al obtener usuarios:', error);
-  }
-};
-
+  };
 
   const filteredUsers = users.filter(user => {
     const matchSearch =
@@ -135,9 +128,9 @@ const GestionUsuario = () => {
       }
 
       if (editingUser) {
-        await axios.put(`${API_URL}/update/${editingUser.id}`, dataToSend);
+        await axios.put(`${API_URL}/api/usuarios/update/${editingUser.id}`, dataToSend);
       } else {
-        await axios.post(`${API_URL}/register`, dataToSend);
+        await axios.post(`${API_URL}/api/usuarios/register`, dataToSend);
       }
 
       setShowModal(false);
@@ -151,7 +144,7 @@ const GestionUsuario = () => {
   const handleDelete = async id => {
     if (window.confirm('¿Está seguro de eliminar este usuario?')) {
       try {
-        await axios.delete(`${API_URL}/delete/${id}`);
+        await axios.delete(`${API_URL}/api/usuarios/delete/${id}`);
         fetchUsers(); // Recargar la lista después de eliminar
       } catch (error) {
         console.error('Error al eliminar usuario:', error);
