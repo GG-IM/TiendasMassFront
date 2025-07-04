@@ -2,7 +2,9 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Package, Folder, Users, ShoppingCart, Settings, CreditCard, UserPlus, LogOut } from 'lucide-react';
 import Swal from 'sweetalert2';
-const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
+
+const URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net"; // URL de Azure
+
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -40,8 +42,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
           showConfirmButton: false
         });
 
-        // Redirigir al login de admin
-        navigate('/admin');
+        // Redirigir al home o menú principal
+        navigate('/');  // Aquí redirige al home, o menú principal según lo que necesites
       }
     });
   };
