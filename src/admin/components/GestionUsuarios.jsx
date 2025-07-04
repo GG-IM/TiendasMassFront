@@ -51,19 +51,26 @@ const GestionUsuario = () => {
   };
 
   const fetchUsers = async () => {
-    try {
-      const response = await axios.get(API_URL);
-      const formatted = response.data.map(user => ({
-        ...user,
-        rol: rolMapping[user.rol?.nombre] || user.rol?.nombre || 'Cliente',
-        lastLogin: new Date().toISOString(),
-        active: true,
-      }));
-      setUsers(formatted);
-    } catch (error) {
-      console.error('Error al obtener usuarios:', error);
+  try {
+    const response = await axios.get(API_URL);
+    if (!response.data || !Array.isArray(response.data)) {
+      console.error('Error: la respuesta no es un array o está vacía.');
+      return;
     }
-  };
+
+    const formatted = response.data.map(user => ({
+      ...user,
+      rol: rolMapping[user.rol?.nombre] || user.rol?.nombre || 'Cliente',
+      lastLogin: new Date().toISOString(),
+      active: true,
+    }));
+
+    setUsers(formatted);
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+  }
+};
+
 
   const filteredUsers = users.filter(user => {
     const matchSearch =
