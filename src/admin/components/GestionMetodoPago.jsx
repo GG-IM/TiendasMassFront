@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-const API_URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
-
 const PaymentMethodManager = () => {
+  const URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net"; // URL de Azure
+  const API_URL = `${URL}/api/metodos-pago`; // API de métodos de pago
+
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -20,7 +21,7 @@ const PaymentMethodManager = () => {
   const loadPaymentMethods = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/estados/orden/actualizar`);
+      const response = await fetch(API_URL);
       if (!response.ok) {
         throw new Error('Error al cargar métodos de pago');
       }
@@ -73,8 +74,8 @@ const PaymentMethodManager = () => {
     try {
       setLoading(true);
       const url = editingMethod 
-        ? `${API_URL}/api/metodos-pago/${editingMethod.id}`
-        : `${API_URL}/api/metodos-pago`;
+        ? `${API_URL}/${editingMethod.id}`
+        : API_URL;
       
       const method = editingMethod ? 'PUT' : 'POST';
       
@@ -139,7 +140,7 @@ const PaymentMethodManager = () => {
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/api/metodos-pago/${id}`, {
+        const response = await fetch(`${API_URL}/${id}`, {
           method: 'DELETE',
         });
 
@@ -233,7 +234,7 @@ const PaymentMethodManager = () => {
                   <td><strong>{method.nombre}</strong></td>
                   <td>{method.descripcion || 'Sin descripción'}</td>
                   <td>
-                    <span className={`badge ${method.comision === 0 ? 'badge-success' : 'badge-warning'}`}>
+                    <span className={`badge ${method.comision === 0 ? 'badge-success' : 'badge-warning'}`} >
                       {method.comision || 0}%
                     </span>
                   </td>
