@@ -88,7 +88,7 @@ const ProductManager = () => {
     setFormData({
       nombre: product.nombre,
       descripcion: product.descripcion,
-      precio: product.precio.toString(),
+      : product..toString(),
       stock: product.stock.toString(),
       marca: product.marca || '',
       imagen: null,
@@ -103,7 +103,7 @@ const ProductManager = () => {
     setFormData({
       nombre: '',
       descripcion: '',
-      precio: '',
+      : '',
       categoriaId: '',
       stock: '',
       marca: '',
@@ -117,7 +117,7 @@ const ProductManager = () => {
     e.preventDefault();
 
     // Validar campos requeridos
-    if (!formData.nombre || !formData.precio || !formData.stock || !formData.categoriaId) {
+    if (!formData.nombre || !formData. || !formData.stock || !formData.categoriaId) {
       swal.fire({
         icon: 'warning',
         title: 'Campos requeridos',
@@ -126,12 +126,12 @@ const ProductManager = () => {
       return;
     }
 
-    // Validar que el precio y stock sean números positivos
-    if (parseFloat(formData.precio) <= 0 || parseInt(formData.stock) < 0) {
+    // Validar que el  y stock sean números positivos
+    if (parseFloat(formData.) <= 0 || parseInt(formData.stock) < 0) {
       swal.fire({
         icon: 'warning',
         title: 'Datos inválidos',
-        text: 'El precio debe ser mayor a 0 y el stock no puede ser negativo',
+        text: 'El  debe ser mayor a 0 y el stock no puede ser negativo',
       });
       return;
     }
@@ -381,7 +381,7 @@ const ProductManager = () => {
                     </div>
                   </td>
                   <td>{product.categoria ? product.categoria.nombre : 'Sin categoría'}</td>
-                  <td><strong>${Number(product.precio).toFixed(2)}</strong></td>
+                  <td><strong>S/.{Number(product.precio).toFixed(2)}</strong></td>
                   <td>
                     <span className={`badge ${product.stock > 20 ? 'badge-success' : product.stock > 5 ? 'badge-warning' : 'badge-danger'}`}>
                       {product.stock}
@@ -421,7 +421,7 @@ const ProductManager = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </>
         </div>
 
         {/* Pagination */}
