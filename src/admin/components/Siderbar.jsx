@@ -22,7 +22,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const handleLogout = () => {
     Swal.fire({
-      title: '¿Cerrar sesión?',
+      title: '¿Desea Salir del panel de administrativo?',
       text: '¿Estás seguro de que quieres salir del panel administrativo?',
       icon: 'question',
       showCancelButton: true,
