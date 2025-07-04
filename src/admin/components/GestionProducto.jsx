@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Eye, Plus, Search } from 'lucide-react';
 import axios from 'axios';
 import swal from 'sweetalert2';
-//import { mockProducts, mockCategories } from '../../data/mockData.jsx';
+
 const URL = "https://tienditamassback-gqaqcfaqg0b7abcj.canadacentral-01.azurewebsites.net";
 const ProductManager = () => {
 
@@ -18,7 +18,6 @@ const ProductManager = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -26,7 +25,6 @@ const ProductManager = () => {
         const [productosRes, categoriasRes] = await Promise.all([
           axios.get(API_URL),
           axios.get(CATEGORY_URL),
-          
         ]);
 
         setProducts(productosRes.data);
@@ -60,7 +58,6 @@ const ProductManager = () => {
     estado: true,
   });
 
-
   const productsPerPage = 10;
 
   const filteredProducts = products.filter(product => {
@@ -78,7 +75,6 @@ const ProductManager = () => {
     return matchesSearch && matchesCategory;
   });
 
-
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const startIndex = (currentPage - 1) * productsPerPage;
   const currentProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
@@ -88,7 +84,7 @@ const ProductManager = () => {
     setFormData({
       nombre: product.nombre,
       descripcion: product.descripcion,
-      : product..toString(),
+      precio: product.precio.toString(),
       stock: product.stock.toString(),
       marca: product.marca || '',
       imagen: null,
@@ -103,7 +99,7 @@ const ProductManager = () => {
     setFormData({
       nombre: '',
       descripcion: '',
-      : '',
+      precio: '',
       categoriaId: '',
       stock: '',
       marca: '',
@@ -117,7 +113,7 @@ const ProductManager = () => {
     e.preventDefault();
 
     // Validar campos requeridos
-    if (!formData.nombre || !formData. || !formData.stock || !formData.categoriaId) {
+    if (!formData.nombre || !formData.precio || !formData.stock || !formData.categoriaId) {
       swal.fire({
         icon: 'warning',
         title: 'Campos requeridos',
@@ -126,12 +122,12 @@ const ProductManager = () => {
       return;
     }
 
-    // Validar que el  y stock sean números positivos
-    if (parseFloat(formData.) <= 0 || parseInt(formData.stock) < 0) {
+    // Validar que el precio y stock sean números positivos
+    if (parseFloat(formData.precio) <= 0 || parseInt(formData.stock) < 0) {
       swal.fire({
         icon: 'warning',
         title: 'Datos inválidos',
-        text: 'El  debe ser mayor a 0 y el stock no puede ser negativo',
+        text: 'El precio debe ser mayor a 0 y el stock no puede ser negativo',
       });
       return;
     }
@@ -193,7 +189,6 @@ const ProductManager = () => {
     }
   };
 
-
   const handleDelete = async (id) => {
     const result = await swal.fire({
       title: '¿Estás seguro?',
@@ -228,7 +223,6 @@ const ProductManager = () => {
       }
     }
   };
-
 
   const toggleActive = async (product) => {
     try {
@@ -365,7 +359,6 @@ const ProductManager = () => {
                         e.target.src = '/placeholder-image.jpg';
                       }}
                     />
-
                   </td>
                   <td>
                     <div>
@@ -421,211 +414,44 @@ const ProductManager = () => {
                 </tr>
               ))}
             </tbody>
-          </>
+          </table>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <nav className="d-flex justify-content-center mt-4">
-            <ul className="pagination">
-              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                <button
-                  className="page-link"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Anterior
-                </button>
-              </li>
-              {[...Array(totalPages)].map((_, index) => (
-                <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </button>
-                </li>
-              ))}
-              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                <button
-                  className="page-link"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Siguiente
-                </button>
-              </li>
-            </ul>
-          </nav>
-        )}
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
-                </h5>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <nav className="d-flex justify-content-center mt-4">
+          <ul className="pagination">
+            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </button>
+            </li>
+            {[...Array(totalPages)].map((_, index) => (
+              <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
                 <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModal(false)}
-                  disabled={loading}
-                ></button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label">Nombre *</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.nombre}
-                          onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="form-group">
-                        <label className="form-label">Categoría *</label>
-                        <select
-                          className="form-select"
-                          value={formData.categoriaId}
-                          onChange={(e) => setFormData({ ...formData, categoriaId: e.target.value })}
-                          required
-                          disabled={loading}
-                        >
-                          <option value="">Seleccionar categoría</option>
-                          {categorias.map(category => (
-                            <option key={category.id} value={category.id}>
-                              {category.nombre}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="form-group">
-                        <label className="form-label">Marca</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.marca}
-                          onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
-                          placeholder="Ej: La Favorita, Nestlé, etc."
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Descripción</label>
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      value={formData.descripcion}
-                      onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                      disabled={loading}
-                    ></textarea>
-                  </div>
-                  
-                  <div className="row">
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label">Precio *</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          className="form-control"
-                          value={formData.precio}
-                          onChange={(e) => setFormData({ ...formData, precio: e.target.value })}
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label">Stock *</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={formData.stock}
-                          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="form-group">
-                        <label className="form-label">Imagen</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="form-control"
-                          onChange={handleImageChange}
-                          disabled={loading}
-                        />
-                        <small className="text-muted">Máximo 5MB. Formatos: JPG, PNG, GIF</small>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="form-group">
-                    <div className="form-check">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        id="estadoCheck"
-                        checked={formData.estado}
-                        onChange={(e) => setFormData({ ...formData, estado: e.target.checked })}
-                        disabled={loading}
-                      />
-                      <label className="form-check-label" htmlFor="estadoCheck">
-                        Producto activo
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                    disabled={loading}
-                  >
-                    Cancelar
-                  </button>
-                  <button type="submit" className="btn btn-mass-blue" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        {editingProduct ? 'Actualizando...' : 'Guardando...'}
-                      </>
-                    ) : (
-                      editingProduct ? 'Actualizar' : 'Guardar'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+                  className="page-link"
+                  onClick={() => setCurrentPage(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+              </button>
+            </li>
+          </ul>
+        </nav>
       )}
     </div>
   );
