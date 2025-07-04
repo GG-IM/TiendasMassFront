@@ -105,16 +105,18 @@ const Sidebar = ({ collapsed, onToggle }) => {
       </ul>
 
       {/* Botón de logout */}
-      <div className="sidebar-footer">
-        <button
-          onClick={handleLogout}
-          className="logout-button"
-          title={collapsed ? 'Cerrar sesión' : ''}
-        >
-          <LogOut className="nav-icon" />
-          {!collapsed && <span className="nav-text">Cerrar Sesión</span>}
-        </button>
-      </div>
+      {/* Botón de logout */}
+<div className="sidebar-footer">
+  <button
+    onClick={handleLogout}
+    className="btn btn-danger d-flex align-items-center"
+    title={collapsed ? 'Cerrar sesión' : ''}
+  >
+    <LogOut className="nav-icon me-2" />
+    {!collapsed && <span className="nav-text">Cerrar Sesión</span>}
+  </button>
+</div>
+
     </nav>
   );
 };
